@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.hao.dao.sqlmap.BlogMapper">
+	
+    <select id="getUser"  parameterType="java.util.HashMap"   resultMap="adminMap"  >
+	  select adminId, loginname, password
+	  from openadmin 
+	  where loginname = #{username} and password = #{password} 
+	</select>
+    
+    <select id="getNews"  parameterType="java.util.HashMap"   resultMap="newsMap"  >
+	  select newsType,newsid,newsTitle,Date_Format(newsDate,'%y-%m-%d') as newsDate,newsClick,newsContent,newsPraise,source  
+	  from news 
+	  where newstitle like CONCAT('%','${newstitle}','%' ) and newstags like CONCAT('%','${newstags}','%' ) 
+	  order by newsdate desc ,newsid desc limit #{start},#{size}
+	</select>
+	
+	<select id="getSaveMsgByPage"  parameterType="java.util.HashMap"   resultMap="saveMessageMap"  >
+	  select messageid,articleid,message,Date_Format(savedate,'%y-%m-%d') as savedate 
+	  from savemessage 
+	  order by savedate desc ,messageid desc limit #{start},#{size}
+	</select>
+	
+	
+	<select id="getHotNews"  parameterType="int"   resultMap="newsMap"  >
+	  select newsType,newsid,newsTitle,Date_Format(newsDate,'%y-%m-%d') as newsDate,newsClick  
+	  from news 
+	  order by newsClick desc limit 0,#{top}
+	</select>
+	
+	<select id="getNewMsg"  parameterType="int"   resultMap="saveMessageMap"  >
+	  select articleid,message,Date_Format(savedate,'%y-%m-%d') as savedate 
+	  from savemessage 
+	  order by savedate desc limit 0,#{top}
+	</select>
+	
+	 <select id="getSaveMsgByArticleId"  parameterType="int"   resultMap="saveMessageMap"  >
+	  select message,Date_Format(savedate,'%y-%m-%d') as savedate,messageid  
+	  from savemessage 
+	  where articleid = #{articleid}
+	  order by savedate
+	</select>
+	
+    
+    <select id="getAllCount" parameterType="int" resultType="_int">
+        select count(*) 
+        from news 
+        where newstitle like CONCAT('%','${newstitle}','%' ) and newstags like CONCAT('%','${newstags}','%' )
+    </select>
+    
+    <!--  select id="getArticleStat" parameterType="String" resultType="_int">
+        select count(*) 
+        from news 
+        where newsDate like #{date}
+    </select-->
+    
+    <select id="getMsgStat" parameterType="String" resultType="_int">
+        select count(*) 
+        from savemessage 
+    </select>
+     <select id="getWebStat" parameterType="map" resultType="org.hao.po.DoubleValue">
+        select count(*) as valueA,'文章总数：' as valueB from news  
+        union select count(*) ,'今日文章数：' from news  where newsdate like #{date}
+        union select count(*),'留言总数：' from savemessage
+        union select count(*), '今日留言数：' from savemessage where savedate like #{date}
+        union select if(isnull(sum(visitstat)),0,sum(visitstat) ),'总访问量：' from visitcount
+      
+    </select>
+    <!--   union select visitstat,'今日访问量：' from visitcount  where  countdate like #{date} -->
+	<select id="getNewsById"  parameterType="int"   resultMap="newsMap"  >
+	  select newsType,newsid,newsTitle,Date_Format(newsDate,'%y-%m-%d') as newsDate,newsClick,newsContent,newsPraise,source,newsTags 
+	  from news 
+	  where newsid = #{newsid}
+	</select>
+	
+	<select id="getAroundNews" parameterType="int" resultMap="newsMap" >
+	<![CDATA[
+	(select newsid,newstitle,'pre' as around from news where newsid < #{newsid} order by newsid desc limit 1) union 
+		(select newsid,newstitle,'next' as around from news where newsid > #{newsid} order by newsid limit 1)
+	]]>
+	</select>
+	
+	<update id="updateNews"  parameterType="org.hao.po.News" >
+	   update news 
+	   set newsTitle=#{newsTitle},newsContent=#{newsContent},newsDate=#{newsDate},newsType=#{newsType},newsTags=#{newsTags}
+	   where newsid=#{newsID}
+	</update>
+	
+	<insert id="addNews" parameterType="org.hao.po.News"> 
+		insert into news (newsTitle,newsContent,newsDate,source,newsTags,newsType)
+		 values(#{newsTitle},#{newsContent},#{newsDate},#{source},#{newsTags},#{newsType})
+	</insert>
+	
+	<insert id="saveMessage" parameterType="org.hao.po.SaveMessage"> 
+		insert into savemessage (articleid,message,savedate,saveperson,email)
+		 values(#{articleid},#{message},#{savedate},'test','123@123.com')
+	</insert>
+	
+	<delete id="removeNews" parameterType="int" >
+	    delete from news where newsid = #{newsid}
+	</delete>
+	
+	<delete id="removeMsg" parameterType="map" >
+	    delete from savemessage where messageid in #{msgid}
+	</delete>
+	
+	<select id="getParameter" resultMap="parameterMap" >
+	<![CDATA[
+	select * from parameter
+	]]>
+	</select>
+	<update id="updateParameter"  parameterType="org.hao.po.ParameterPo" >
+	   update parameter 
+	   set 
+	   header=#{HEADER},footer=#{FOOTER},myintroduce=#{introduce},
+	   myemail=#{email},weibo=#{weibo},pagesize=#{PAGE_SIZE},
+	   hosturl=#{webhost},DATA_SOURCE_TYPE=#{DATA_SOURCE_TYPE}
+	</update>
+	<update id="addClick"  parameterType="int" >
+	   update news 
+	   set newsclick=newsclick+1
+	   where newsid=#{newsid}
+	</update>
+	<update id="addPraise"  parameterType="int" >
+	   update news 
+	   set newsPraise=newsPraise+1
+	   where newsid=#{newsid}
+	</update>
+	<select id="getPraise" resultType="int" >
+	<![CDATA[
+	select newsPraise 
+	from news
+	where newsid=#{newsid}
+	]]>
+	</select>
+	<select id="selectAllTags" resultMap="tagsMap">
+	   select tagid,tagname 
+	   from tags  
+	   order by tagid  
+	</select>
+	
+	<update id="updateTag"  parameterType="int" >
+	   update tags 
+	   set tagname=#{tagName}
+	   where tagid=#{tagId}
+	</update>
+	
+	<insert id="addTag" parameterType="String"> 
+		insert into tags (tagname)
+		 values(#{tagName})
+	</insert>
+	
+	<insert id="addTodayVisit" parameterType="String"> 
+		insert into visitcount (countdate)
+		 values(#{today})
+	</insert>
+	
+	
+	<delete id="removeTag" parameterType="int" >
+	    delete from tags where tagid = #{tagId}
+	</delete>
+	
+	<insert id="insertVisitNewDate"  parameterType="org.hao.po.VisitCount" >
+	   insert visitcount (countdate,visitstat) values(#{countdate},#{visitstat})
+	</insert>
+	<update id="updateVisitCount"  parameterType="org.hao.po.VisitCount" >
+	   update visitcount 
+	   set visitstat=#{visitstat}
+	   where countdate=#{countdate}
+	</update>
+	
+	<select id="getTodayVisit" parameterType="String" resultType="int">
+	   select visitstat
+	   from visitcount  
+	   where  countdate=#{countdate}
+	</select>
+	<select id="getTodayVisitCount" parameterType="String" resultType="int">
+	   select visitstat
+	   from visitcount  
+	   where  countdate=#{countdate}
+	</select>
+	
+	<select id="getAllVisitCount" resultType="int">
+	   select if(isnull(sum(visitstat)),0,sum(visitstat) )
+	   from visitcount 
+	</select>
+	 <resultMap type="Parameter" id="parameterMap">
+	     <id property="parameterid" column="parameterid" />  
+	     <result property="HEADER" column="header"/>  
+	     <result property="FOOTER" column="footer"/>
+	     <result property="introduce" column="myintroduce"/>
+	      <result property="email" column="myemail"/>
+	       <result property="weibo" column="weibo"/>
+	       <result property="PAGE_SIZE" column="pagesize"/>
+	        <result property="DATA_SOURCE_TYPE" column="DATA_SOURCE_TYPE"/>
+	        <result property="webhost" column="hosturl"/>
+	</resultMap>
+	 <resultMap type="Admin" id="adminMap">
+	     <id property="adminId" column="adminId" />  
+	     <result property="loginname" column="loginname"/>  
+	     <result property="password" column="password"/>
+	     <result property="idcode" column="idcode"/>
+	</resultMap>
+	  <resultMap type="News" id="newsMap">
+	     <id property="newsID" column="newsID" />  
+	     <result property="newsTitle" column="newsTitle"/>  
+	     <result property="newsDate" column="newsDate"/>
+	     <result property="newsTags" column="newsTags"/>
+	     <result property="newsClick" column="newsClick"/>
+	     <result property="newsPraise" column="newsPraise"/>  
+	     <result property="source" column="source"/>
+	     <result property="newsContent" column="newsContent"/>
+	     <result property="around" column="around"/>
+	     <result property="newsType" column="newsType"/>
+	</resultMap>
+	<resultMap type="Tags" id="tagsMap">
+	     <id property="tagId" column="tagid" />  
+	     <result property="tagName" column="tagname"/> 
+	</resultMap>
+	<resultMap type="SaveMessage" id="saveMessageMap">
+	     <id property="messageid" column="messageid" />  
+	     <result property="message" column="message"/>
+	     <result property="articleid" column="articleid"/> 
+	     <result property="savedate" column="savedate"/> 
+	</resultMap>
+</mapper>

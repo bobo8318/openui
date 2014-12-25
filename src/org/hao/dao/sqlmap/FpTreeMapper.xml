@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.hao.dao.sqlmap.FpTreeMapper">
+	<select id="getLotteryData" resultMap="lotteryMap">
+	   select lotteryid,lotteryData,lotteryDate
+	   from lottery  where lotteryDate between '${beginDate}' and '${endDate}'
+	   order by lotteryid
+	</select>
+	
+	<select id="getAnswer" parameterType="java.util.HashMap" resultType="_int">
+	   select tagid from tags  
+	     
+	</select>
+	
+	<resultMap type="Lottery" id="lotteryMap">
+	     <id property="lotteryid" column="lotteryid" />  
+	     <result property="lotteryData" column="lotteryData"/>
+	     <result property="lotteryDate" column="lotteryDate"/> 
+	</resultMap>
+</mapper>

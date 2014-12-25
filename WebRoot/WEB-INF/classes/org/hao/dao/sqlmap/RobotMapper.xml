@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.hao.dao.sqlmap.RobotMapper">
+
+	<select id="getNodeList" parameterType="java.util.HashMap"   resultMap="robotMap">
+		 select *  
+	  from robotDick  
+	  order by dickid desc limit #{start},#{size}
+	</select>
+	
+	<select id="getNodeCount" parameterType="java.util.HashMap"   resultMap="robotMap">
+		 select count(*)  
+	  from robotDick  
+	</select>
+	
+	<select id="getAnswer" parameterType="java.util.List" resultMap="robotMap">
+	   select * from robotDick where nodetype=1 and isshow=1 
+	   <foreach collection="list" item="key" index="index" separator=" ">
+	       and questionKey like concat('%','${key}','%')
+	   </foreach>
+	     
+	</select>
+	
+	<select id="learn" parameterType="Robot">
+	   insert into robotdick(question,questionKey,answer,nodetype) values(#{question},#{questionKey},#{answer},#{nodetype})
+	</select>
+	
+	<select id="getNodeById" parameterType="int" resultMap="robotMap">
+	   select * from robotDick where dickid=#{id}
+	</select>
+	
+	<resultMap type="Robot" id="robotMap">
+	     <id property="nodeId" column="dickid"/>  
+	     <result property="nodeType" column="nodetype"/>
+	     <result property="nodekey" column="questionKey"/> 
+	     <result property="fatherId" column="fatherid"/> 
+	     <result property="childrenId" column="childrenid"/> 
+	     <result property="ask" column="question"/> 
+	     <result property="answer" column="answer"/> 
+	     <result property="operate" column="operate"/> 
+	     <result property="worktype" column="worktype"/> 
+	     
+	</resultMap>
+</mapper>

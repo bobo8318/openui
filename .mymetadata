@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-module
+  type="WEB"
+  name="OpenUI"
+  id="myeclipse.1377654668593"
+  context-root="/OpenUI"
+  j2ee-spec="6.0"
+  archive="OpenUI.war">
+  <attributes>
+    <attribute name="webrootdir" value="WebRoot" />
+  </attributes>
+</project-module>
+
